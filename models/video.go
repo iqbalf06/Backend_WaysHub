@@ -10,7 +10,7 @@ type Video struct {
 	Video       string    `gorm:"type: varchar(255)" json:"video"`
 	ChannelID   int       `json:"channel_id" `
 	Channel     Channel   `json:"channel" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	CreatedAt   time.Time `json:"-"`
+	CreatedAt   time.Time `json:"createdAt"`
 	ViewCount   int       `json:"viewcount" form:"viewcount" gorm:"type: int"`
 	Comment     []Comment `json:"comment" `
 }

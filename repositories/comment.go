@@ -10,8 +10,9 @@ type CommentRepository interface {
 	FindComments() ([]models.Comment, error)
 	GetComment(ID int) (models.Comment, error)
 	AddComment(comment models.Comment) (models.Comment, error)
-	EditComment(comment models.Comment) (models.Comment, error)
+	GetVideobyID(ID int) (models.Video, error)
 	DeleteComment(comment models.Comment) (models.Comment, error)
+	GetCommentbyVideo(ID int) ([]models.Comment, error)
 }
 
 func RepositoryComment(db *gorm.DB) *repository {
@@ -20,7 +21,7 @@ func RepositoryComment(db *gorm.DB) *repository {
 
 func (r *repository) FindComments() ([]models.Comment, error) {
 	var comments []models.Comment
-	err := r.db.Find(&comments).Error
+	err := r.db.Preload("Channel").Find(&comments).Error
 
 	return comments, err
 }
@@ -32,10 +33,24 @@ func (r *repository) GetComment(ID int) (models.Comment, error) {
 	return comment, err
 }
 
+func (r *repository) GetCommentbyVideo(ID int) ([]models.Comment, error) {
+	var comment []models.Comment
+	err := r.db.Find(&comment, "video_id=?", ID).Error
+
+	return comment, err
+}
+
 func (r *repository) AddComment(comment models.Comment) (models.Comment, error) {
 	err := r.db.Preload("Channel").Create(&comment).Error
 
 	return comment, err
+}
+
+func (r *repository) GetVideobyID(ID int) (models.Video, error) {
+	var video models.Video
+	err := r.db.First(&video, ID).Error
+
+	return video, err
 }
 
 func (r *repository) EditComment(comment models.Comment) (models.Comment, error) {

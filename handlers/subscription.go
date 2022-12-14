@@ -39,7 +39,7 @@ func (h *handlerSubscription) AddSubscription(w http.ResponseWriter, r *http.Req
 	// UserChannelId := 4
 	subscription := models.Subscription{
 		// UserChannelId: request.UserChannelId,
-		ChannelId: userId,
+		ChannelID: userId,
 	}
 	fmt.Println(subscription)
 

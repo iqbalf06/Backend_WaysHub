@@ -27,12 +27,12 @@ func HandlerComment(CommentRepository repositories.CommentRepository) *handlerCo
 func (h *handlerComment) AddComment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
+
 	// get data user token
 	// println(r.Context())
 	userInfo := r.Context().Value("userInfo").(jwt.MapClaims)
-	fmt.Println(userInfo, " ini user info")
 	userId := int(userInfo["id"].(float64))
-	fmt.Println(userId, "masuk sini ?")
 
 	request := commentdto.CommentRequest{
 		Comment: r.FormValue("comment"),
@@ -47,10 +47,20 @@ func (h *handlerComment) AddComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	video, err := h.CommentRepository.GetVideobyID(id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		response := dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+	fmt.Println(video.ID)
+
 	comment := models.Comment{
 		ChannelID: userId,
 		Comment:   request.Comment,
 		CreatedAt: time.Now(),
+		VideoID:   video.ID,
 	}
 
 	comment, err = h.CommentRepository.AddComment(comment)
@@ -60,8 +70,6 @@ func (h *handlerComment) AddComment(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(response)
 		return
 	}
-
-	comment, _ = h.CommentRepository.GetComment(comment.ID)
 
 	w.WriteHeader(http.StatusOK)
 	response := dto.SuccessResult{Code: "success", Data: comment}
@@ -100,37 +108,22 @@ func (h *handlerComment) GetComment(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func (h *handlerComment) EditComment(w http.ResponseWriter, r *http.Request) {
+func (h *handlerComment) GetCommentbyVideo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id, _ := strconv.Atoi(mux.Vars(r)["id"])
 
-	request := commentdto.CommentRequest{
-		Comment: r.FormValue("comment"),
-	}
-
-	comment, err := h.CommentRepository.GetComment(int(id))
+	comment, err := h.CommentRepository.GetCommentbyVideo(id)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
 		json.NewEncoder(w).Encode(response)
 		return
 	}
-
-	if request.Comment != "" {
-		comment.Comment = request.Comment
-	}
-
-	data, err := h.CommentRepository.EditComment(comment)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()}
-		json.NewEncoder(w).Encode(response)
-		return
-	}
+	fmt.Println(id)
 
 	w.WriteHeader(http.StatusOK)
-	response := dto.SuccessResult{Code: "success", Data: data}
+	response := dto.SuccessResult{Code: "success", Data: comment}
 	json.NewEncoder(w).Encode(response)
 }
 

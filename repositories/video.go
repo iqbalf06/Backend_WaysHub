@@ -29,7 +29,7 @@ func (r *repository) FindVideos() ([]models.Video, error) {
 
 func (r *repository) GetVideo(ID int) (models.Video, error) {
 	var video models.Video
-	err := r.db.First(&video, ID).Error
+	err := r.db.Preload("Channel").First(&video, ID).Error
 
 	return video, err
 }

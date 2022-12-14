@@ -52,6 +52,14 @@ func (h *handlerAuth) Register(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(response)
 	}
 
+	emailChannel, _ := h.AuthRepository.Login(request.Email)
+
+	if emailChannel.Email == request.Email {
+		w.WriteHeader(http.StatusBadRequest)
+		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: "Email already registered"}
+		json.NewEncoder(w).Encode(response)
+	}
+
 	user := models.Channel{
 		Email:       request.Email,
 		Password:    password,
